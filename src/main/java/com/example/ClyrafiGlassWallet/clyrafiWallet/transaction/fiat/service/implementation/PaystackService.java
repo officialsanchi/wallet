@@ -17,7 +17,6 @@ public class PaystackService {
     private final RestTemplate restTemplate ;
     @Value("${paystack.secret.key}")
     private String secretKey;
-//
     @Value("${paystack.base.url}")
     private String baseUrl;
 

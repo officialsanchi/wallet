@@ -1,4 +1,4 @@
-# Use Maven to build the app
+
 FROM maven:3.8.7 AS build
 WORKDIR /app
 COPY pom.xml .

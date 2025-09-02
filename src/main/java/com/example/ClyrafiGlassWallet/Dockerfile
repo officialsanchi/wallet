@@ -1,12 +1,15 @@
-FROM ubuntu:latest
-LABEL authors="DELL"
+# Use Maven to build the app
+FROM maven:3.8.7 AS build
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-ENTRYPOINT ["top", "-b"]
+# Use OpenJDK to run the app
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 
-FROM maven:3.8.7 as build
-COPY . .
-RUN mvn -B clean package -DskipTests
-
-FROM openjdk:17
-COPY --from=build ./target/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "-Dserver.port=8081", "app.jar"]
+# Use the PORT environment variable provided by the platform
+ENV PORT=1946
+ENTRYPOINT ["sh", "-c", "java -jar -Dserver.port=$PORT app.jar"]

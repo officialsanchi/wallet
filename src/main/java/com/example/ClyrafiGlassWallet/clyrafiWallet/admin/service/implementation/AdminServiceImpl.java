@@ -36,6 +36,7 @@ public class AdminServiceImpl implements AdminService {
     private final AdminRepository adminRepository;
     private final VerificationTokenService verificationTokenService;
     private final MailSenderService mailSenderService;
+    private final VerificationTokenRepository verificationTokenRepository;
 
     @Override
     public AdminRegisterResponses registerAdmin(AdminRegisterRequest request) {
@@ -104,6 +105,33 @@ public class AdminServiceImpl implements AdminService {
 //        sendVerificationEmail( admin.getEmail(), verificationUrl );
 
         return "Verification email resent successfully. Please check your inbox.";
+    }
+
+    @Override
+    public VerificationToken validateToken(String token, String email) {
+        VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid verification token"));
+
+
+        if (verificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("Token has expired");
+        }
+
+        Admin admin = verificationToken.getAdmin();
+
+
+        if (!admin.getEmail().equalsIgnoreCase(email)) {
+            throw new IllegalArgumentException("Token does not belong to this email");
+        }
+
+
+        admin.setVerificationStatus(VerificationStatus.VERIFIED);
+        admin.setUpdatedAt(LocalDateTime.now());
+
+
+        verificationTokenRepository.save(verificationToken);
+
+        return verificationToken;
     }
 
     private void sendVerificationEmail(String token, String to) {

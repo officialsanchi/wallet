@@ -1,6 +1,7 @@
 package com.example.ClyrafiGlassWallet.clyrafiWallet.admin.controller;
 
 import com.example.ClyrafiGlassWallet.clyrafiWallet.admin.data.model.Admin;
+import com.example.ClyrafiGlassWallet.clyrafiWallet.admin.data.model.VerificationToken;
 import com.example.ClyrafiGlassWallet.clyrafiWallet.admin.data.repository.AdminRepository;
 import com.example.ClyrafiGlassWallet.clyrafiWallet.admin.data.repository.VerificationTokenRepository;
 import com.example.ClyrafiGlassWallet.clyrafiWallet.admin.dtos.request.AdminRegisterRequest;
@@ -8,6 +9,7 @@ import com.example.ClyrafiGlassWallet.clyrafiWallet.admin.dtos.responses.AdminRe
 
 import com.example.ClyrafiGlassWallet.clyrafiWallet.admin.service.interfaces.AdminService;
 
+import com.example.ClyrafiGlassWallet.clyrafiWallet.admin.service.interfaces.VerificationTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 public class AdminController {
     private final AdminService adminService;
+    private final VerificationTokenService verificationTokenService;
 
 
     @PostMapping("/register")
@@ -32,6 +35,16 @@ public class AdminController {
     public ResponseEntity<String> resendVerificationEmail(@RequestParam String email) {
         return ResponseEntity.ok(adminService.resendVerificationEmail( email ));
     }
+
+    @GetMapping("/verify")
+    public ResponseEntity<String> verifyAdmin(
+            @RequestParam("token") String token,
+            @RequestParam("email") String email) {
+
+        VerificationToken verifiedToken = verificationTokenService.validateToken(token, email);
+        return ResponseEntity.ok("Admin " + verifiedToken.getAdmin().getEmail() + " verified successfully!");
+    }
+
 
 //    private final VerificationTokenRepository tokenRepository;
 
